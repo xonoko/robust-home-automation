@@ -1,0 +1,43 @@
+# Hub image.
+image:
+  repository: ghcr.io/xonoko/robust-home-automation/hub
+  tag: ""  # defaults to the chart appVersion
+  pullPolicy: IfNotPresent
+
+# Host networking is required by the Continuity Edge (VIP, virtual MAC,
+# TCP_REPAIR; docs/adr/0005). Leave it off until the Edge is implemented:
+# with host networking, the surge pod of a rollout also needs the HTTP
+# listener handed over, which the Edge's socket handover will provide.
+hostNetwork: false
+
+# NATS servers the hub connects to (a NATS release in the same namespace by default).
+nats:
+  urls:
+    - nats://nats:4222
+
+# Bootstrap configuration passed as HUB_* environment variables (docs/adr/0010).
+config:
+  logLevel: info
+  otlpEndpoint: ""
+  drainDelay: 2s
+  shutdownTimeout: 20s
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+# Postgres managed by CloudNativePG (docs/adr/0004). The operator must be installed first.
+postgres:
+  enabled: true
+  # 1 for single-node mode, 3 for 3-node mode.
+  instances: 3
+  image: ghcr.io/cloudnative-pg/postgresql:18
+  storage:
+    size: 5Gi
+    storageClass: ""
+
+nodeSelector: {}
+tolerations: []

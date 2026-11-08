@@ -1,0 +1,15 @@
+# NATS for the 3-node development cluster (docs/adr/0003).
+config:
+  cluster:
+    enabled: true
+    replicas: 3
+  jetstream:
+    enabled: true
+    fileStore:
+      pvc:
+        size: 2Gi
+    merge:
+      # Default is every 2 minutes; a power cut would lose acknowledged data.
+      sync_interval: always
+natsBox:
+  enabled: true

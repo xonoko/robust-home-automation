@@ -1,0 +1,12 @@
+# Node drains evict at most one hub pod at a time.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "hub.name" . }}
+  labels:
+    {{- include "hub.labels" . | nindent 4 }}
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      {{- include "hub.selectorLabels" . | nindent 6 }}

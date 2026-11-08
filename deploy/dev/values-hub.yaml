@@ -1,0 +1,11 @@
+# Hub on the Docker Desktop development cluster: locally built image, small volumes.
+image:
+  repository: robust-home-automation/hub
+  tag: dev
+  pullPolicy: Never
+config:
+  logLevel: debug
+postgres:
+  instances: 3
+  storage:
+    size: 1Gi

@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "hub.name" . }}
+  labels:
+    {{- include "hub.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "hub.selectorLabels" . | nindent 6 }}
+  # One pod per node (docs/adr/0002). Surge: the new pod starts next to the old
+  # one on the same node before the old one stops (socket handover, docs/adr/0005).
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        {{- include "hub.selectorLabels" . | nindent 8 }}
+    spec:
+      hostNetwork: {{ .Values.hostNetwork }}
+      dnsPolicy: {{ if .Values.hostNetwork }}ClusterFirstWithHostNet{{ else }}ClusterFirst{{ end }}
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      {{- if .Values.postgres.enabled }}
+      initContainers:
+        # Applies pending migrations. Atlas takes a lock, so pods starting at the
+        # same time do not race. Migrations are expand-then-contract (docs/adr/0004).
+        - name: migrate
+          image: {{ include "hub.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /usr/local/bin/atlas
+            - migrate
+            - apply
+            - --dir
+            - file:///migrations
+            - --url
+            - postgres://$(PG_USER):$(PG_PASSWORD)@$(PG_HOST):5432/$(PG_DB)?sslmode=require
+          env:
+            {{- range $name, $key := dict "PG_USER" "username" "PG_PASSWORD" "password" "PG_HOST" "host" "PG_DB" "dbname" }}
+            - name: {{ $name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hub.pgSecret" $ }}
+                  key: {{ $key }}
+            {{- end }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      {{- end }}
+      containers:
+        - name: hub
+          image: {{ include "hub.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["serve"]
+          env:
+            - name: HUB_NODE__ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: HUB_HTTP__ADDR
+              value: ":8080"
+            - name: HUB_NATS__URLS
+              value: {{ join "," .Values.nats.urls | quote }}
+            - name: HUB_TELEMETRY__LOG_LEVEL
+              value: {{ .Values.config.logLevel | quote }}
+            - name: HUB_TELEMETRY__OTLP_ENDPOINT
+              value: {{ .Values.config.otlpEndpoint | quote }}
+            - name: HUB_SHUTDOWN__DRAIN_DELAY
+              value: {{ .Values.config.drainDelay | quote }}
+            - name: HUB_SHUTDOWN__TIMEOUT
+              value: {{ .Values.config.shutdownTimeout | quote }}
+            {{- if .Values.postgres.enabled }}
+            - name: HUB_DATABASE__URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "hub.pgSecret" . }}
+                  key: uri
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 2
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

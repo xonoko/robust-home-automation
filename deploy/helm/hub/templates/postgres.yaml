@@ -1,0 +1,33 @@
+{{- if .Values.postgres.enabled }}
+# Postgres cluster managed by CloudNativePG (docs/adr/0004).
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "hub.pgCluster" . }}
+  labels:
+    {{- include "hub.labels" . | nindent 4 }}
+spec:
+  instances: {{ .Values.postgres.instances }}
+  imageName: {{ .Values.postgres.image }}
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+  storage:
+    size: {{ .Values.postgres.storage.size }}
+    {{- with .Values.postgres.storage.storageClass }}
+    storageClass: {{ . }}
+    {{- end }}
+  {{- if gt (int .Values.postgres.instances) 1 }}
+  # An isolated primary cannot commit: every commit waits for one replica.
+  postgresql:
+    synchronous:
+      method: any
+      number: 1
+      dataDurability: required
+  {{- end }}
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+    podAntiAffinityType: preferred
+{{- end }}
