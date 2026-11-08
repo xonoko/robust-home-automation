@@ -1,0 +1,38 @@
+# Two nodes and one device on a plain bridge network (an "unmanaged switch").
+name: tcp-repair-spike
+
+x-node: &node
+  build: .
+  cap_add: [NET_ADMIN, NET_RAW]
+  sysctls:
+    # Only the interface that owns an address answers ARP for it, so the VIP
+    # is always resolved to the virtual MAC, never to a node's own MAC.
+    net.ipv4.conf.all.arp_ignore: 1
+    net.ipv4.conf.all.arp_announce: 2
+
+services:
+  node-a:
+    <<: *node
+    command: ["node", "--name", "node-a", "--active"]
+    networks:
+      lan: { ipv4_address: 172.30.0.11 }
+
+  node-b:
+    <<: *node
+    command: ["node", "--name", "node-b"]
+    networks:
+      lan: { ipv4_address: 172.30.0.12 }
+
+  device:
+    build: .
+    command: ["device", "--addr", "172.30.0.100:7000", "--interval", "20ms"]
+    depends_on: [node-a, node-b]
+    networks:
+      lan: { ipv4_address: 172.30.0.20 }
+
+networks:
+  lan:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
