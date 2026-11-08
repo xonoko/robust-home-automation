@@ -1,0 +1,110 @@
+name: CI
+
+# Runs on our self-hosted runners. Set the RUNNER_LABEL repository variable
+# to target specific runners (defaults to any "self-hosted" runner).
+# Runner requirements: Linux amd64, Docker, git, make, a C compiler (go test -race).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}/hub
+
+jobs:
+  go:
+    name: Go lint, test, generated code
+    runs-on: ${{ vars.RUNNER_LABEL || 'self-hosted' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install web dependencies (needed to regenerate the API client)
+        run: npm ci
+        working-directory: web
+      - name: Generated code is up to date
+        run: make check-generated
+      - name: Lint
+        run: make lint
+      - name: Test
+        run: make test
+
+  migrations:
+    name: Migrations match the ent schema
+    runs-on: ${{ vars.RUNNER_LABEL || 'self-hosted' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: ariga/setup-atlas@v0
+      - name: No schema change without a migration
+        run: |
+          atlas migrate validate --env local
+          atlas migrate diff ci_drift_check --env local
+          if [ -n "$(git status --porcelain internal/store/migrations)" ]; then
+            echo "The ent schema changed without a migration: run 'make migration NAME=<name>' and commit it."
+            git status --porcelain internal/store/migrations
+            exit 1
+          fi
+
+  web:
+    name: Web typecheck and build
+    runs-on: ${{ vars.RUNNER_LABEL || 'self-hosted' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npm run typecheck
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+
+  image:
+    name: Container image (amd64)
+    needs: [go, migrations, web]
+    runs-on: ${{ vars.RUNNER_LABEL || 'self-hosted' }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Log in to GitHub Container Registry
+        if: github.event_name == 'push'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build (and push on main)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64
+          push: ${{ github.event_name == 'push' }}
+          build-args: |
+            VERSION=${{ github.sha }}
+            COMMIT=${{ github.sha }}
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:main
