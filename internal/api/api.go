@@ -25,6 +25,12 @@ const Title = "Robust Home Automation API"
 // checkTimeout bounds each readiness check.
 const checkTimeout = 2 * time.Second
 
+func init() {
+	// Handlers never return nil slices, so arrays are not nullable in the
+	// OpenAPI document and the generated TypeScript types stay exact.
+	huma.DefaultArrayNullable = false
+}
+
 // Check is a dependency checked by the readiness endpoint. A failing critical
 // check makes the node not ready; a failing non-critical one is only reported.
 type Check struct {
