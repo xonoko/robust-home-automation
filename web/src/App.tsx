@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
-import { api, type Readiness, type VersionInfo } from "./api/client";
+import { getReadiness, getVersion, type Readiness, type VersionInfo } from "./api/client";
 
 const refreshMs = 5000;
 
 // Readiness answers 503 with the same body when the node is not ready.
-async function fetchReadiness(): Promise<Readiness | null> {
-  const { data, error } = await api.GET("/readyz");
-  return data ?? (error as Readiness | undefined) ?? null;
+async function fetchReadiness(): Promise<Readiness> {
+  return (await getReadiness()).data;
+}
+
+async function fetchVersion(): Promise<VersionInfo | null> {
+  const res = await getVersion();
+  return res.status === 200 ? res.data : null;
 }
 
 export function App() {
@@ -18,10 +22,10 @@ export function App() {
     let cancelled = false;
     const load = async () => {
       try {
-        const [ready, ver] = await Promise.all([fetchReadiness(), api.GET("/api/v1/version")]);
+        const [ready, ver] = await Promise.all([fetchReadiness(), fetchVersion()]);
         if (cancelled) return;
         setReadiness(ready);
-        setVersion(ver.data ?? null);
+        setVersion(ver);
         setUnreachable(false);
       } catch {
         if (!cancelled) setUnreachable(true);

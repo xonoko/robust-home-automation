@@ -22,7 +22,7 @@ The architecture is documented as decision records in [docs/adr](docs/adr/README
 
 ## Development
 
-Requirements: Go 1.25, Node 24, Docker Desktop. See `make help`.
+Requirements: Go 1.27, Node 26, Docker Desktop. See `make help`.
 
 ## License
 

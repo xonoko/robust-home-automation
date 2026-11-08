@@ -4,7 +4,9 @@ SHELL := /bin/bash
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 COMMIT  ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 IMAGE   ?= ghcr.io/xonoko/robust-home-automation/hub
-GOLANGCI_LINT ?= go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
+# Build tools live in their own module (tools/go.mod) so their dependencies
+# never constrain the hub's.
+TOOL := go tool -modfile=tools/go.mod
 LDFLAGS := -s -w \
 	-X github.com/xonoko/robust-home-automation/internal/version.Version=$(VERSION) \
 	-X github.com/xonoko/robust-home-automation/internal/version.Commit=$(COMMIT)
@@ -16,7 +18,7 @@ help: ## Show this help
 .PHONY: generate
 generate: ## Regenerate ent, protobuf and the web API client
 	go generate ./...
-	go tool buf generate
+	$(TOOL) buf generate
 	go run ./cmd/hub openapi > web/openapi.json
 	cd web && npm run gen:api
 
@@ -39,8 +41,8 @@ test: ## Run Go tests
 
 .PHONY: lint
 lint: ## Lint Go and protobuf
-	$(GOLANGCI_LINT) run ./...
-	go tool buf lint
+	$(TOOL) golangci-lint run ./...
+	$(TOOL) buf lint
 
 .PHONY: check-generated
 check-generated: generate ## Fail if generated code is out of date

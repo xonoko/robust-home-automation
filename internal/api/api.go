@@ -7,6 +7,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"reflect"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -148,7 +149,13 @@ func (s *Server) registerSystem() {
 		Description: "Returns 200 when every critical dependency is available, 503 otherwise or while the node is shutting down.",
 		Tags:        []string{"System"},
 		Responses: map[string]*huma.Response{
-			"503": {Description: "Not ready"},
+			// Same body as the 200 response, so clients can show what failed.
+			"503": {
+				Description: "Not ready",
+				Content: map[string]*huma.MediaType{
+					"application/json": {Schema: s.api.OpenAPI().Components.Schemas.Schema(reflect.TypeFor[Readiness](), true, "")},
+				},
+			},
 		},
 	}, func(ctx context.Context, _ *struct{}) (*readinessOutput, error) {
 		body := s.readiness(ctx)

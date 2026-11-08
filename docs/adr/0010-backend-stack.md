@@ -22,7 +22,11 @@ The backend is written in Go and must stay easy to read and debug for years.
 | CI | GitHub Actions on self-hosted runners; lint and test; amd64 images for now |
 | License | AGPL-3.0 |
 
-Code generators (`buf`, `protoc-gen-go`, `ent`) are pinned as Go tool dependencies in `go.mod`, so `go generate` needs no global installs.
+Code generators that must match a runtime library (`ent`, `protoc-gen-go`) are Go tool dependencies in `go.mod`. Other build tools (`buf`, `golangci-lint`) are tool dependencies of a separate module, `tools/go.mod`, so their dependencies never hold back the hub's. Nothing needs a global install.
+
+The web client is generated with orval, which does not depend on the TypeScript compiler API and so works with TypeScript 7.
+
+Versions: every language, library, tool, base image and chart starts on its latest stable release (Go 1.27, TypeScript 7, Node 26 LTS, Postgres 18). No component is pinned to an older version to work around a tool; the tool is replaced or isolated instead.
 
 ## Consequences
 
