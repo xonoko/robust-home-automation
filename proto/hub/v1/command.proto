@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package hub.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// CommandKind decides how a command is delivered when its integration is
+// unavailable (docs/adr/0009).
+enum CommandKind {
+  COMMAND_KIND_UNSPECIFIED = 0;
+  // Sets a desired state. Coalesced to the latest value per attribute and
+  // reconciled against the reported state.
+  COMMAND_KIND_STATE = 1;
+  // A one-off action (chime, scene). Dropped when its deadline passes.
+  COMMAND_KIND_MOMENTARY = 2;
+}
+
+// DeviceCommand is published on hub.v1.device.<device_id>.cmd.
+message DeviceCommand {
+  // Unique ID, also used as the Nats-Msg-Id for deduplication.
+  string command_id = 1;
+  string device_id = 2;
+  string channel_id = 3;
+  CommandKind kind = 4;
+  // Desired value. Toggles are resolved to an absolute value before publishing.
+  google.protobuf.Value desired = 5;
+  // After this time the command must not be executed.
+  google.protobuf.Timestamp deadline = 6;
+  // Lease revision of the sender; integrations reject lower tokens.
+  uint64 fencing_token = 7;
+}
+
+// CommandOutcome is the final result of a command.
+enum CommandOutcome {
+  COMMAND_OUTCOME_UNSPECIFIED = 0;
+  // The device reported the desired state.
+  COMMAND_OUTCOME_CONFIRMED = 1;
+  // The deadline passed before confirmation.
+  COMMAND_OUTCOME_EXPIRED = 2;
+  // A newer owner exists; the sender's fencing token was stale.
+  COMMAND_OUTCOME_REJECTED_STALE_TOKEN = 3;
+  // A newer command for the same attribute replaced this one.
+  COMMAND_OUTCOME_SUPERSEDED = 4;
+  COMMAND_OUTCOME_FAILED = 5;
+}
+
+// CommandResult reports how a command ended.
+message CommandResult {
+  string command_id = 1;
+  CommandOutcome outcome = 2;
+  string detail = 3;
+  google.protobuf.Timestamp completed_at = 4;
+}

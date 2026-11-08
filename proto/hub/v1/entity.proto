@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package hub.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// EntityState is published on hub.v1.entity.<entity_id>.state whenever an
+// entity's reported state changes.
+message EntityState {
+  string entity_id = 1;
+  // Reported value, e.g. a bool for a switch or a number for a temperature.
+  google.protobuf.Value value = 2;
+  // When the integration observed the value.
+  google.protobuf.Timestamp observed_at = 3;
+  // True when the change was recovered after a disruption instead of being
+  // observed live. Automation triggers decide what to do with late changes.
+  bool late = 4;
+  // Channel the value came from.
+  string source_channel_id = 5;
+}

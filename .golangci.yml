@@ -1,0 +1,36 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gocritic
+    - gosec
+    - misspell
+    - noctx
+    - revive
+    - unconvert
+    - unparam
+  exclusions:
+    generated: lax
+    paths:
+      - internal/store/ent
+      - internal/gen
+      - spikes
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/xonoko/robust-home-automation
+  exclusions:
+    paths:
+      - internal/store/ent
+      - internal/gen

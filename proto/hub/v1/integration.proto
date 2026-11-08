@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package hub.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// FailoverProfile tells the maintenance controller how to move an
+// integration between nodes (docs/adr/0009).
+enum FailoverProfile {
+  FAILOVER_PROFILE_UNSPECIFIED = 0;
+  // Long-lived device connections that move with the Continuity Edge.
+  FAILOVER_PROFILE_EDGE_MIGRATION = 1;
+  // Several nodes receive the same traffic; duplicates are removed.
+  FAILOVER_PROFILE_MULTIPLE_LISTENERS = 2;
+  // One owner at a time, handed over cleanly on planned operations.
+  FAILOVER_PROFILE_LEASE = 3;
+  // A short gap is accepted and handled by command delivery.
+  FAILOVER_PROFILE_DISRUPTION_AWARE = 4;
+}
+
+// Availability of an integration instance.
+enum Availability {
+  AVAILABILITY_UNSPECIFIED = 0;
+  AVAILABILITY_ONLINE = 1;
+  AVAILABILITY_DEGRADED = 2;
+  // Being moved to another node by a planned operation.
+  AVAILABILITY_MOVING = 3;
+  AVAILABILITY_OFFLINE = 4;
+}
+
+// IntegrationHealth is published on hub.v1.integration.<integration_id>.health.
+message IntegrationHealth {
+  string integration_id = 1;
+  FailoverProfile profile = 2;
+  Availability availability = 3;
+  // Node currently owning the integration.
+  string node_id = 4;
+  // Commands waiting for delivery or confirmation.
+  uint32 pending_commands = 5;
+  string detail = 6;
+  google.protobuf.Timestamp observed_at = 7;
+}
