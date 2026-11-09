@@ -5,7 +5,7 @@
 
 ## Context
 
-Some work must have exactly one owner at a time: the Edge VIP, each integration instance that sends commands, the config writer for some operations. Owners must change quickly on a crash and without a gap on planned operations, and a stale owner must never act.
+Some work must have exactly one owner at a time: the VIP, each integration instance that sends commands, the config writer for some operations. Owners must change quickly on a crash and without a gap on planned operations, and a stale owner must never act.
 
 ## Decision
 
@@ -14,7 +14,7 @@ Some work must have exactly one owner at a time: the Edge VIP, each integration 
 - **Server-side TTL**: the TTL is evaluated by NATS, never by local clocks. The holder stops acting after its renew deadline (shorter than the TTL), measured on its monotonic clock since the last successful renewal, so it always stops before anyone else can take over.
 - **Fencing token = KV revision.** Every command carries it; our integrations and handlers reject a lower token; Postgres writes by an owner check it in the `WHERE` clause.
 - **Planned handover**: the owner stops taking work, finishes what is in flight, and releases explicitly; the next owner is watching the key and acquires it immediately. Work arriving meanwhile waits in JetStream.
-- Defaults: Edge lease TTL 2 s, renewed every 500 ms.
+- Defaults: VIP lease TTL 2 s, renewed every 500 ms.
 
 ## Consequences
 

@@ -18,7 +18,7 @@ Two supported modes, both on k3s:
 
 - Kubernetes is the **supervisor and packager**, not the failover mechanism. Failover is driven by the application ([0006](0006-leases-and-fencing.md)) and never waits for pod rescheduling (default eviction is ~5 minutes; StatefulSet pods on an unreachable node are never rescheduled automatically).
 - The hub runs as a **DaemonSet**: one pod per node, pinned, using local storage only through NATS and Postgres.
-- k3s upgrades are done **without draining**: restarting k3s does not stop running containers. Only OS/kernel reboots go through the maintenance sequence in [0005](0005-continuity-edge.md).
+- k3s upgrades are done **without draining**: restarting k3s does not stop running containers. Only OS/kernel reboots go through the maintenance sequence in [0005](0005-virtual-ip.md).
 - Local development uses Docker Desktop's built-in Kubernetes (kind provisioner, 3 nodes).
 
 ## Consequences

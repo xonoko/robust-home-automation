@@ -13,7 +13,7 @@ The architecture is documented as decision records in [docs/adr](docs/adr/README
 | Path | Contents |
 |---|---|
 | `cmd/hub` | Hub binary |
-| `internal/` | Hub packages (API, bus, store, edge, leases, automations, integrations, maintenance) |
+| `internal/` | Hub packages (API, bus, store, virtual IP, leases, automations, integrations, maintenance) |
 | `proto/` | Protocol Buffers definitions for bus messages |
 | `web/` | Web UI (React + TypeScript) |
 | `deploy/` | Helm chart and local development cluster scripts |

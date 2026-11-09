@@ -4,10 +4,10 @@ image:
   tag: ""  # defaults to the chart appVersion
   pullPolicy: IfNotPresent
 
-# Host networking is required by the Continuity Edge (VIP, virtual MAC,
-# TCP_REPAIR; docs/adr/0005). Leave it off until the Edge is implemented:
-# with host networking, the surge pod of a rollout also needs the HTTP
-# listener handed over, which the Edge's socket handover will provide.
+# Host networking is required by the virtual IP (virtual MAC, TCP_REPAIR;
+# docs/adr/0005). Leave it off until the virtual IP is implemented: with
+# host networking, the surge pod of a rollout also needs the HTTP listener
+# handed over, which the virtual IP's socket handover will provide.
 hostNetwork: false
 
 # NATS servers the hub connects to (a NATS release in the same namespace by default).

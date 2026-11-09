@@ -12,7 +12,7 @@ Device events, commands, automation triggers and internal coordination all flow 
 - **NATS server with JetStream**, deployed as its own StatefulSet (not embedded in the hub), so hub releases never restart the broker.
 - Streams and KV buckets that carry state use **R3** replication.
 - **`sync_interval: always`**. The JetStream default flushes to disk every 2 minutes (`defaultSyncInterval` in `server/filestore.go`); with all nodes in one house, a power cut would lose up to 2 minutes of acknowledged data.
-- The hub uses the **native NATS protocol** with all server URLs. Devices do not connect to NATS; they connect to the Continuity Edge ([0005](0005-continuity-edge.md)).
+- The hub uses the **native NATS protocol** with all server URLs. Devices do not connect to NATS; they connect to the hub's virtual IP ([0005](0005-virtual-ip.md)).
 - Consumers are durable pull consumers, acked after processing; handlers are idempotent; publishes carry `Nats-Msg-Id` for deduplication.
 - Trace context travels in NATS message headers.
 - Subjects follow `hub.v1.<kind>.<id>.<verb>`, e.g. `hub.v1.entity.<id>.state`, `hub.v1.device.<id>.cmd`, `hub.v1.integration.<id>.health`.

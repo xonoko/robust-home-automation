@@ -1,6 +1,6 @@
 # Spike: live TCP connection migration with TCP_REPAIR
 
-Validates the cross-node migration of the Continuity Edge ([ADR 0005](../../docs/adr/0005-continuity-edge.md)): a device keeps one TCP connection open while the connection moves between two nodes, with no reconnect, no loss and no reordering.
+Validates the cross-node migration of the virtual IP ([ADR 0005](../../docs/adr/0005-virtual-ip.md)): a device keeps one TCP connection open while the connection moves between two nodes, with no reconnect, no loss and no reordering.
 
 ## Setup
 

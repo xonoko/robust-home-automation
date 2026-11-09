@@ -8,8 +8,8 @@ import "google/protobuf/timestamp.proto";
 // integration between nodes (docs/adr/0009).
 enum FailoverProfile {
   FAILOVER_PROFILE_UNSPECIFIED = 0;
-  // Long-lived device connections that move with the Continuity Edge.
-  FAILOVER_PROFILE_EDGE_MIGRATION = 1;
+  // Long-lived connections that move with the virtual IP.
+  FAILOVER_PROFILE_VIP_MIGRATION = 1;
   // Several nodes receive the same traffic; duplicates are removed.
   FAILOVER_PROFILE_MULTIPLE_LISTENERS = 2;
   // One owner at a time, handed over cleanly on planned operations.

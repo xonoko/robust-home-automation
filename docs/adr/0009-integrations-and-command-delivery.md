@@ -13,7 +13,7 @@ Most target installations are KNX with an IP gateway (typically an MDT SCN-IP100
 
 | Profile | Meaning | Examples |
 |---|---|---|
-| Edge migration | The device keeps a long-lived connection to us; it moves with the Edge | MQTT clients, Shelly outbound WebSocket, OCPP |
+| VIP migration | The device keeps a long-lived connection to us; it moves with the VIP | MQTT clients, Shelly outbound WebSocket, OCPP |
 | Multiple listeners | Several nodes receive the same traffic; duplicates are removed | KNX routing or one tunnel per node, ONVIF events, EnOcean with two gateways, BLE proxies |
 | Lease | One owner; clean handover on planned operations | Modbus (often single-client), SIP (planned moves wait for calls to end), outgoing KNX commands |
 | Disruption-aware | A short gap is accepted and handled by the command model | Zigbee2MQTT, cloud APIs |

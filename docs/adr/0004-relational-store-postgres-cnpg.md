@@ -10,7 +10,7 @@ Configuration (devices, channels, entities, areas, users, automations) is relati
 ## Decision
 
 - **Postgres managed by CloudNativePG (CNPG)**: 1 instance in single-node mode, 1 primary + 2 replicas in 3-node mode, synchronous replication to at least one replica so an isolated primary cannot commit.
-- Postgres holds configuration and history only. **The hot path never touches it**: device → Edge → NATS → automations → NATS → Edge → device works while Postgres fails over.
+- Postgres holds configuration and history only. **The hot path never touches it**: device → VIP → NATS → automations → NATS → VIP → device works while Postgres fails over.
 - Access through **ent**; schema migrations are versioned with **Atlas** and are **expand-then-contract only**, because two hub versions run side by side during a rollout.
 - Migrations run in the hub pod's init container with `atlas migrate apply`, which takes a lock so concurrent pods do not race.
 - API writes retry with idempotency keys, so a CNPG switchover (a few seconds) shows up as a slower request, never as an error.

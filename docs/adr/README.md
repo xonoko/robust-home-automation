@@ -9,7 +9,7 @@ Records are immutable once accepted; a change of mind is a new record that super
 | [0002](0002-deployment-modes-k3s.md) | Deployment modes on k3s | Accepted |
 | [0003](0003-message-bus-nats-jetstream.md) | Message bus: NATS JetStream | Accepted |
 | [0004](0004-relational-store-postgres-cnpg.md) | Relational store: Postgres on CloudNativePG | Accepted |
-| [0005](0005-continuity-edge.md) | Continuity Edge: device connections that survive planned operations | Accepted |
+| [0005](0005-virtual-ip.md) | Virtual IP: connections that survive planned operations | Accepted |
 | [0006](0006-leases-and-fencing.md) | Leases and fencing | Accepted |
 | [0007](0007-zero-config-networking.md) | Zero-config networking on consumer hardware | Accepted |
 | [0008](0008-domain-model.md) | Domain model: Device, Channel, Entity, Area | Accepted |

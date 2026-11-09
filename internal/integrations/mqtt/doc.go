@@ -1,3 +1,3 @@
-// Package mqtt is the MQTT server devices connect to, part of the Continuity
-// Edge. Sessions, retained and pending messages live in JetStream.
+// Package mqtt is the MQTT server devices connect to, served on the virtual IP
+// (docs/adr/0005). Sessions, retained and pending messages live in JetStream.
 package mqtt

@@ -28,8 +28,8 @@ type FailoverProfile int32
 
 const (
 	FailoverProfile_FAILOVER_PROFILE_UNSPECIFIED FailoverProfile = 0
-	// Long-lived device connections that move with the Continuity Edge.
-	FailoverProfile_FAILOVER_PROFILE_EDGE_MIGRATION FailoverProfile = 1
+	// Long-lived connections that move with the virtual IP.
+	FailoverProfile_FAILOVER_PROFILE_VIP_MIGRATION FailoverProfile = 1
 	// Several nodes receive the same traffic; duplicates are removed.
 	FailoverProfile_FAILOVER_PROFILE_MULTIPLE_LISTENERS FailoverProfile = 2
 	// One owner at a time, handed over cleanly on planned operations.
@@ -42,14 +42,14 @@ const (
 var (
 	FailoverProfile_name = map[int32]string{
 		0: "FAILOVER_PROFILE_UNSPECIFIED",
-		1: "FAILOVER_PROFILE_EDGE_MIGRATION",
+		1: "FAILOVER_PROFILE_VIP_MIGRATION",
 		2: "FAILOVER_PROFILE_MULTIPLE_LISTENERS",
 		3: "FAILOVER_PROFILE_LEASE",
 		4: "FAILOVER_PROFILE_DISRUPTION_AWARE",
 	}
 	FailoverProfile_value = map[string]int32{
 		"FAILOVER_PROFILE_UNSPECIFIED":        0,
-		"FAILOVER_PROFILE_EDGE_MIGRATION":     1,
+		"FAILOVER_PROFILE_VIP_MIGRATION":      1,
 		"FAILOVER_PROFILE_MULTIPLE_LISTENERS": 2,
 		"FAILOVER_PROFILE_LEASE":              3,
 		"FAILOVER_PROFILE_DISRUPTION_AWARE":   4,
@@ -248,10 +248,10 @@ const file_hub_v1_integration_proto_rawDesc = "" +
 	"\x10pending_commands\x18\x05 \x01(\rR\x0fpendingCommands\x12\x16\n" +
 	"\x06detail\x18\x06 \x01(\tR\x06detail\x12;\n" +
 	"\vobserved_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\n" +
-	"observedAt*\xc4\x01\n" +
+	"observedAt*\xc3\x01\n" +
 	"\x0fFailoverProfile\x12 \n" +
-	"\x1cFAILOVER_PROFILE_UNSPECIFIED\x10\x00\x12#\n" +
-	"\x1fFAILOVER_PROFILE_EDGE_MIGRATION\x10\x01\x12'\n" +
+	"\x1cFAILOVER_PROFILE_UNSPECIFIED\x10\x00\x12\"\n" +
+	"\x1eFAILOVER_PROFILE_VIP_MIGRATION\x10\x01\x12'\n" +
 	"#FAILOVER_PROFILE_MULTIPLE_LISTENERS\x10\x02\x12\x1a\n" +
 	"\x16FAILOVER_PROFILE_LEASE\x10\x03\x12%\n" +
 	"!FAILOVER_PROFILE_DISRUPTION_AWARE\x10\x04*\x93\x01\n" +
