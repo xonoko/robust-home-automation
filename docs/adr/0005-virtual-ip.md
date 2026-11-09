@@ -30,9 +30,15 @@ Expected pause: 100–300 ms; no reset, no reconnect.
 
 **Maintenance sequence for an OS reboot** (run by the hub's maintenance controller): migrate the VIP if the node holds it → move integration leases (make-before-break) → step down NATS leaders on the node → CNPG switchover if the primary is there → drain with PodDisruptionBudgets → reboot → wait healthy → uncordon. Kubelet graceful node shutdown runs the same preStop hooks on a manual reboot.
 
+**Service mode: no host networking, no added capabilities.** The hub must also run where pods get neither, for example under the `restricted` Pod Security level or in a shared cluster, with reduced features. The chart selects the mode (`network.mode: virtualIP | service`). At startup the hub checks what it actually has and shows in the UI which guarantees apply.
+- Devices reach the hub through a Kubernetes Service: `LoadBalancer` (k3s ServiceLB, MetalLB, kube-vip) or `NodePort`. The cluster provides that address, not DHCP.
+- No connection migration. On a planned operation, an integration first stops taking work, then closes its connections cleanly (MQTT 5 sends `DISCONNECT` with reason "server shutting down"). Devices reconnect through the Service to another pod. Integrations with the VIP migration profile behave as disruption-aware ([0009](0009-integrations-and-command-delivery.md)): MQTT clients with persistent sessions and QoS ≥ 1 lose nothing, but devices that drop what they publish while disconnected (Tasmota, Shelly, ESPHome) can lose messages during the reconnect.
+- No LAN multicast or link-local traffic. KNX uses tunnelling in NAT mode instead of routing. There is no mDNS: devices and joining nodes are given the Service's address. Cameras are added by address, without ONVIF WS-Discovery. Matter is not available, because it needs IPv6 link-local and mDNS on the LAN.
+- Unchanged: leases and fencing, command delivery, outbound connections (Modbus, the Zigbee2MQTT adapter, RTSP, cloud APIs), callbacks (sent to the Service's address) and crash recovery.
+
 ## Consequences
 
-- Hub pods need host networking and `CAP_NET_ADMIN`, Linux ≥ 4.8, and wired Ethernet (macvlan does not work over Wi-Fi).
+- In virtual IP mode, hub pods need host networking and `CAP_NET_ADMIN`, Linux ≥ 4.8, and wired Ethernet (macvlan does not work over Wi-Fi). Service mode needs none of these.
 - Every device-facing protocol implementation must export and import its per-connection state.
 - At home scale all device connections sit on one node; that keeps the design simple.
 - Open risk: TLS connections (MQTT on 8883, OCPP) need a TLS implementation whose state can be exported for cross-node migration.
