@@ -1,6 +1,6 @@
 # 0008. Domain model: Device, Channel, Entity, Area
 
-- Status: Accepted
+- Status: Accepted, being revised: the resource model proposal ([design/resource-model.md](../design/resource-model.md)) replaces it. This record is rewritten once the remaining choices in that proposal are made.
 - Date: 2026-11-08
 
 ## Context

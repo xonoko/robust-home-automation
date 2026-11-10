@@ -1,7 +1,7 @@
 # Architecture Decision Records
 
 Each record explains one decision: the context, what we chose, the consequences and the options we rejected.
-Records are immutable once accepted; a change of mind is a new record that supersedes the old one.
+Until the first release, accepted records are updated in place as the design evolves, and Git history keeps the earlier versions. After the first release they become immutable: a change of mind is then a new record that supersedes the old one.
 
 | # | Title | Status |
 |---|---|---|
@@ -12,8 +12,9 @@ Records are immutable once accepted; a change of mind is a new record that super
 | [0005](0005-virtual-ip.md) | Virtual IP: connections that survive planned operations | Accepted |
 | [0006](0006-leases-and-fencing.md) | Leases and fencing | Accepted |
 | [0007](0007-zero-config-networking.md) | Zero-config networking on consumer hardware | Accepted |
-| [0008](0008-domain-model.md) | Domain model: Device, Channel, Entity, Area | Accepted |
+| [0008](0008-domain-model.md) | Domain model: Device, Channel, Entity, Area | Being revised ([proposal](../design/resource-model.md)) |
 | [0009](0009-integrations-and-command-delivery.md) | Integrations, failover profiles and command delivery | Accepted |
 | [0010](0010-backend-stack.md) | Backend stack and tooling | Accepted |
+| [0011](0011-api-extension-api-server.md) | API: Kubernetes-style resources served by the hub | Accepted |
 
 Template for new records: [template.md](template.md).
