@@ -1,8 +1,12 @@
 name: CI
 
-# Runs on our self-hosted runners. Set the RUNNER_LABEL repository variable
-# to target specific runners (defaults to any "self-hosted" runner).
-# Runner requirements: Linux amd64, Docker, git, make, a C compiler (go test -race).
+# Pushes to main run on our self-hosted runners. Set the RUNNER_LABEL
+# repository variable to target specific runners (defaults to any
+# "self-hosted" runner). Pull requests run on GitHub-hosted runners: the
+# repository is public, so code from a pull request must never reach our
+# machines.
+# Self-hosted runner requirements: Linux amd64, Docker, git, make, a C
+# compiler (go test -race).
 
 on:
   push:
@@ -22,7 +26,7 @@ env:
 jobs:
   go:
     name: Go lint, test, generated code
-    runs-on: ${{ vars.RUNNER_LABEL || 'self-hosted' }}
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || vars.RUNNER_LABEL || 'self-hosted' }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -45,7 +49,7 @@ jobs:
 
   migrations:
     name: Migrations match the ent schema
-    runs-on: ${{ vars.RUNNER_LABEL || 'self-hosted' }}
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || vars.RUNNER_LABEL || 'self-hosted' }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -64,7 +68,7 @@ jobs:
 
   web:
     name: Web typecheck and build
-    runs-on: ${{ vars.RUNNER_LABEL || 'self-hosted' }}
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || vars.RUNNER_LABEL || 'self-hosted' }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -82,7 +86,7 @@ jobs:
   image:
     name: Container image (amd64)
     needs: [go, migrations, web]
-    runs-on: ${{ vars.RUNNER_LABEL || 'self-hosted' }}
+    runs-on: ${{ github.event_name == 'pull_request' && 'ubuntu-latest' || vars.RUNNER_LABEL || 'self-hosted' }}
     permissions:
       contents: read
       packages: write
